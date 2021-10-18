@@ -1,0 +1,1 @@
+[E 2021-10-18 11:56:13,942 /home/pride829/.local/lib/python3.8/site-packages/shioaji/utils.py:43:raise_resp_error] {'status': {'status_code': 400}, 'response': {'token': '', 'accounts': [], 'detail': 'ORA-20003: customer_not_exist\nORA-06512: at "STSTX.SGTP_LOGIN_G", line 395\nORA-06512: at line 1', 'ip_address': '42.75.250.10', 'client_name': ''}}
