@@ -1,0 +1,12 @@
+{
+  "profit_stop": "10",
+  "loss_stop": "10",
+  "profit_stop_intense": "5",
+  "loss_stop_intense": "5",
+  "morning_intense_hour": "9",
+  "morning_intense_minute": "3",
+  "afternoon_intense_hour": "13",
+  "afternoon_intense_minute": "42",
+  
+  "future_name": "MXFL1"
+}

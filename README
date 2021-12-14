@@ -1,0 +1,4 @@
+在account/account_info.json中，設定永豐金證券的帳號、密碼以及憑證的密碼
+將憑證放在/中並命名為Sinopac.pfx
+
+

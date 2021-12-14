@@ -17,7 +17,5 @@ def shioaji_login():
     )
     
     activate = api.activate_ca(ca_path=ca_path, ca_passwd=account_data['ca_passwd'], person_id=account_data['person_id'])
-    
-    print(activate)
-    
+
     return api
