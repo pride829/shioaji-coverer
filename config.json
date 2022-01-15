@@ -1,12 +1,12 @@
 {
-  "profit_stop": "15",
-  "loss_stop": "15",
-  "profit_stop_intense": "4",
-  "loss_stop_intense": "5",
-  "morning_intense_hour": "9",
-  "morning_intense_minute": "3",
-  "afternoon_intense_hour": "13",
-  "afternoon_intense_minute": "20",
+  "normal_profit_stop": "15",
+  "normal_loss_stop": "15",
+  "intense_profit_stop": "4",
+  "intense_loss_stop": "5",
   
-  "future_name": "MXFA2"
+  "intense_begin": "13:20",
+  "intense_end": "09:03",
+  
+  "future_name": "TXF",
+  "auto_recent_future": "False"
 }
