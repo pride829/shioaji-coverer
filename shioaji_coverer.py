@@ -231,10 +231,10 @@ def place_cb(stat, msg):
     # TODO: update_status may be useful?
     #api.update_status(api.future_account)
 
+api = shioaji_login.login()
 
 api.set_order_callback(place_cb)
 
-api = shioaji_login.login()
 
 # Parsing config.json
 
