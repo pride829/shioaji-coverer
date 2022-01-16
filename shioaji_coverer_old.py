@@ -1,46 +1,14 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-import os
-import sys
 import json
 import time
 import datetime
 import traceback
 import threading
 import importlib
-import codecs
-from pathlib import Path
 
 import shioaji as sj
 import shioaji_login
 # Need to reload this for some reason that I can't remember.
 importlib.reload(shioaji_login)
-
-def write_log(text):
-    """
-    Write into log file.
-    
-    :param text: (str)
-    :return: None
-    """
-
-    now = datetime.datetime.now()
-    path = 'coverer_logs'
-    try:
-        Path(path).mkdir(parents=True, exist_ok=True)
-    except FileExistsError:
-        # directory already exists
-        pass
-    
-    log_name = now.strftime('%Y%m%d') + '.log'
-    path = os.path.join(path, log_name)
-
-    # In order to let json dumps chinese correctly, codecs is needed.
-    # When ever use json dumps, specify ensure_ascii=False
-    fp = codecs.open(path, 'a+', 'utf16')
-    fp.write(text)
-    fp.close()
 
 def stop_price_updater():
     """
@@ -102,7 +70,6 @@ def get_future_code(future_name):
     year = now.year
     first_weekday = now.replace(day=1).weekday()
     
-    # Calculate the dayt of the third wednesday
     if(first_weekday < 3):
         third_wednesday = 17 - first_weekday
     else:
@@ -125,7 +92,7 @@ def get_future_code(future_name):
     
     return future_code
 
-def place_cover_order(quantity, action, original_price, market_price):
+def place_cover_order(quantity, action, market_price):
     """
     Place the cover order.
     
@@ -146,11 +113,9 @@ def place_cover_order(quantity, action, original_price, market_price):
     trade = api.place_order(contract, fut_order)
     
     print('***')
-    log_msg = f'An cover order with action={action}, quantity={quantity} has been placed!\nOriginal price:{original_price}, Market price: {market_price}.'
-    print(log_msg)
-    write_log(log_msg)
-    print('***\n')
-
+    print(f'An cover order with action={action}, quantity={quantity} has been placed! Market price: {market_price}.')
+    print('***')
+    
 def price_checker(market_price):
     """
     Called every time market price is updated.
@@ -172,23 +137,23 @@ def price_checker(market_price):
         if(p[0] == 1):
             cover_action = sj.constant.Action.Sell
             if(market_price < p[2] - loss_stop):
-                place_cover_order(p[1], cover_action, p[2], market_price)
+                place_cover_order(p[1], cover_action, market_price)
                 break
             if(market_price < p[3] - profit_stop):
-                place_cover_order(p[1], cover_action, p[2], market_price)
+                place_cover_order(p[1], cover_action, market_price)
                 break
         elif(p[0] == -1):
             cover_action = sj.constant.Action.Buy
             if(market_price > p[2] + loss_stop):
-                place_cover_order(p[1], cover_action, p[2], market_price)
+                place_cover_order(p[1], cover_action, market_price)
                 break
             if(market_price > p[3] + profit_stop):
-                place_cover_order(p[1], cover_action, p[2], market_price)
+                place_cover_order(p[1], cover_action, market_price)
                 break
-
+                
 def fill_positions(deal):
     """
-    :global param positions: (list)
+    :global param watch_list: (list)
     
     :return: None
     """
@@ -232,12 +197,10 @@ def fill_positions(deal):
         else:
             quantity -= positions[0][1]
             del positions[0]
-
+    
     print('***')
-    log_msg = f'A position with type={action_text}, quantity={ori_quantity}, price={price} has been recorded!'
-    print(log_msg)
-    write_log(log_msg)
-    print('***\n')
+    print(f'A position with type={action_text}, quantity={ori_quantity}, price={price} has been recorded!')
+    print('***')
     
     if (quantity > 0):
         positions.append([action, quantity, price, price])
@@ -246,144 +209,48 @@ def fill_positions(deal):
             positions = sorted(positions, key=lambda p: p[2], reverse=False)
         else:
             positions = sorted(positions, key=lambda p: p[2], reverse=True)
-
+            
         print('***')
-        log_msg = f'A position with type={action_text}, quantity={quantity}, price={price} has been added to the track list!'
-        print(log_msg)
-        write_log(log_msg)
-        print('***\n')
-
-msg_list = []
-
+        print(f'A position with type={action_text}, quantity={quantity}, price={price} has been added to the watch list!')
+        print('***')
+        
 def place_cb(stat, msg):
     """
     Called every time an order or a deal has been detected.
-    
-    :global param: msg_list ()
     """
     
-    global msg_list
-    
-    print(dir(msg))
     if(stat == sj.constant.OrderState.FOrder):
         print('An order has been detected.')
         print(f'op_msg: \"{msg["operation"]["op_msg"]}\"')
-        write_log('stat: ' + stat + '\nmsg: ' + json.dumps(msg, ensure_ascii=False) )
-        msg_list.append(msg)
     elif(stat == sj.constant.OrderState.FDeal):
         print('A deal has been detected.')
         print(f'Deal information: code:{msg["code"]}, action:{msg["action"]}, price:{msg["price"]}, quantity:{msg["quantity"]}')
         print(f'Delivery month:{msg["delivery_month"]}, security type: {msg["security_type"]}')
-        write_log('stat: ' + stat + '\nmsg: ' + json.dumps(msg, ensure_ascii=False) )
-        msg_list.append(msg)
         fill_positions(msg)
-        
+    
     # TODO: update_status may be useful?
     #api.update_status(api.future_account)
-
-
-def send_test_msg(
-    price,
-    quantity,
-    action,
-    stat=sj.constant.OrderState.FDeal,
-    code='MXF',
-    delivery_month='202201',
-    security_type='FUT'
-):
-    """
-    For test purpose.
-    """
-    # Testing with msg
-
-    msg = {}
-    msg['price'] = price
-    msg['quantity'] = quantity
-    msg['action'] = action
-    msg['code'] = code
-    msg['delivery_month'] = delivery_month
-    msg["security_type"] = security_type
-
-    place_cb(stat, msg)
-
-
-# This is a navie UI implementation. I wonder if there is some framework-like UI availible?
-
-def UI():
-    """
-    Threading function.
-    User Interface.
-    
-    :global param: market_price (int)
-    """
-    
-    while(True):
-        
-        try:
-            input_text = input()
-        except EOFError:
-            pass
-        
-        if(input_text == str('price')):
-            
-            print(f'Market price for {contract["code"]}: {market_price}')
-            
-        elif(input_text == 'list'):
-            
-            print('The position currently tracking:')
-            
-            if not positions:
-                print('Empty.')
-                
-            for p in positions:
-                
-                if(p[0] == 1):
-                    action_text = "Long"
-                else:
-                    action_text = "Short"
-                
-                print(f'[Type: {action_text}, quantity: {p[1]}, deal price: {p[2]}, best price: {p[3]}]')
-           
-        
-        elif(input_text == 'contract'):
-            
-            print(f'Currently contract: {contract["code"]}')
-            
-        elif(input_text == 'quit'):
-            
-            return
-        
-        elif(input_text == 'help'):
-            
-            print('price: Get the market price of currently contract.')
-            print('list: List the position currently tracking.')
-            print('contract: Get the currently contract.')
-            print('quit: Exit the program.')
-            
-        else:
-            print(f'Command "{input_text}" is not recognized.')
-
-# Main
 
 api = shioaji_login.login()
 
 api.set_order_callback(place_cb)
 
+
 # Parsing config.json
 
 with open('config.json') as f:
     config_data = json.load(f)
-
+    
     intense_begin_time = datetime.datetime.strptime(config_data['intense_begin'], '%H:%M').time()
     intense_end_time = datetime.datetime.strptime(config_data['intense_end'], '%H:%M').time()
-
+    
     normal_profit_stop = int(config_data['normal_profit_stop'])
     normal_loss_stop = int(config_data['normal_loss_stop'])
     intense_profit_stop = int(config_data['intense_profit_stop'])
     intense_loss_stop = int(config_data['intense_loss_stop'])
-
+    
     future_name = config_data['future_name']
-
+    
     # If auto_recent_future, get the most recent future code.
     if(config_data['auto_recent_future'].lower() == 'true'):
         future_code = get_future_code(future_name)
@@ -404,13 +271,14 @@ try:
         raise ValueError(f'Error: contract {future_code} does not exsits.')
 except ValueError as err:
     traceback.print_exc()
-
+    
 # positions is a list of list
 # Each single list cotains 4 values: Position_type, quantity, price, best_price
 # Position_type determine the type of positions holding. 0: Neutral, 1: Long, -1: short
 positions = []
 
-# Update price with each tick and check.
+# TODO: Track price.
+
 market_price = 0
 
 @api.on_tick_fop_v1()
@@ -423,13 +291,3 @@ api.quote.subscribe(
     quote_type = sj.constant.QuoteType.Tick, # or 'tick'
     version = sj.constant.QuoteVersion.v1, # or 'v1'
 )
-
-# Start UI
-
-# Start UI with thread cause some EOF exceptions?
-#UI_thread = threading.Thread(target = UI)
-#UI_thread.start()
-
-# Simply run UI without threading.
-UI()
-sys.exit()
