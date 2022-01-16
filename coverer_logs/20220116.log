@@ -1,0 +1,39 @@
+14:34:30
+A position with type=Long, quantity=2, price=18362 has been recorded!
+14:34:30
+A position with type=Long, quantity=2, price=18362 has been added to the watch list!
+14:43:35
+A position with type=Long, quantity=2, price=18000 has been recorded!
+14:43:35
+A position with type=Long, quantity=2, price=18000 has been added to the watch list!
+14:46:16
+A position with type=Long, quantity=2, price=18000 has been recorded!
+14:46:16
+A position with type=Long, quantity=2, price=18000 has been added to the watch list!
+14:46:35
+A position with type=Long, quantity=2, price=18000 has been recorded!
+14:46:35
+A position with type=Long, quantity=2, price=18000 has been added to the watch list!
+14:46:55
+A position with type=Long, quantity=2, price=18000 has been recorded!
+14:46:55
+A position with type=Long, quantity=2, price=18000 has been added to the watch list!
+14:47:04
+A position with type=Short, quantity=3, price=18000 has been recorded!
+14:47:37
+An cover order with action=Sell, quantity=1 has been placed! Market price: 18000.
+14:54:03
+stat: FDEAL
+msg: {"price": 18000, "quantity": 3, "action": "Sell", "code": "MXF", "delivery_month": "202201", "security_type": "FUT"}
+14:54:03
+A position with type=Short, quantity=3, price=18000 has been recorded!
+14:54:03
+A position with type=Short, quantity=2, price=18000 has been added to the watch list!
+14:55:06
+An cover order with action=Buy, quantity=2 has been placed! Market price: 18010.
+14:55:06
+stat: FORDER
+msg: {"operation": {"op_type": "New", "op_code": "99S8", "op_msg": "\u958b\u76e4\u524d\u4e0d\u63a5\u53d7\u6b64\u7a2e\u59d4\u8a17"}, "order": {"id": "4e41ca3a", "seqno": "552607", "ordno": "00", "account": {"account_type": "F", "person_id": "", "broker_id": "F002000", "account_id": "1645949", "signed": true}, "action": "Buy", "price": 0.0, "quantity": 2, "order_type": "FOK", "market_type": "Day", "oc_type": "Cover", "subaccount": ""}, "status": {"id": "4e41ca3a", "exchange_ts": 1642402508, "modified_price": 0.0, "cancel_quantity": 0, "order_quantity": 2}, "contract": {"security_type": "FUT", "code": "MXF", "exchange": "TIM", "delivery_month": "202201", "delivery_date": "", "strike_price": 0.0, "option_right": "Future"}}
+15:33:37
+stat: FDEAL
+msg: {"price": 18000, "quantity": 3, "action": "Sell", "code": "MXF", "delivery_month": "202201", "security_type": "FUT"}
