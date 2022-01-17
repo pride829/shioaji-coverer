@@ -1,0 +1,38 @@
+# Shioaji Coverer使用說明
+
+## 環境需求:
+* Python 3.6-3.8
+* Shioaji
+
+## 環境設置:
+
+執行Anaconda prompt。
+
+在shioaji-coverer資料夾底下建立account/account_info.json。這個檔案會存放帳號密碼，範例可見account_info.json.example
+
+將憑證檔案(Sinopac.pfx)放到C:\sinopac底下。
+
+cd至shioaji-coverer資料夾底下，執行
+```py shioaji_coverer.py```
+
+## 程式設置:
+
+在config.json中設置一般停利停損點位、尖峰時段的停利停損點位、以及尖峰時段開始和結束的時間(開盤前和收盤後視為尖峰時段)。
+
+future_name代表想追蹤的商品，TXF代表台指期，MXF代表小台期。
+
+如果auto_recent_future設置為True，程式會自動抓取最近一期的合約；如果為False，程式則會設定future_code為合約。如果auto_recent_future為True，則程式會忽略future_code。
+
+## 使用:
+
+使用python運行shioaji_coverer.py即可。
+
+***在程式執行前不要持有倉位，否則會導致判斷錯誤***
+
+***下單時不要使用「自動」下單***
+
+輸入"help"來搜尋可用的指令。目前有幾個指令：
+price: 顯示當前追蹤合約的市價。
+list: 顯示目前追蹤的部位，這些部位一旦觸發停損停利條件，程式就會送出平倉單。
+contract: 顯示目前追蹤的合約。
+quit: 離開程式 ***目前這個功能有問題，請直接點叉叉關閉程式***

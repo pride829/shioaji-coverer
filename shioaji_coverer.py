@@ -1,6 +1,17 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+# In[1]:
+
+
+#TODO: Make a user interface
+#TODO: Write file in chinese
+#TODO: Test
+
+
+# In[2]:
+
+
 import os
 import sys
 import json
@@ -10,12 +21,17 @@ import traceback
 import threading
 import importlib
 import codecs
+
 from pathlib import Path
 
 import shioaji as sj
 import shioaji_login
 # Need to reload this for some reason that I can't remember.
 importlib.reload(shioaji_login)
+
+
+# In[3]:
+
 
 def write_log(text):
     """
@@ -41,6 +57,11 @@ def write_log(text):
     fp = codecs.open(path, 'a+', 'utf16')
     fp.write(text)
     fp.close()
+    
+
+
+# In[4]:
+
 
 def stop_price_updater():
     """
@@ -88,6 +109,10 @@ def stop_price_updater():
         
     return
 
+
+# In[5]:
+
+
 def get_future_code(future_name):
     """
     Return future code based on future name
@@ -125,6 +150,10 @@ def get_future_code(future_name):
     
     return future_code
 
+
+# In[6]:
+
+
 def place_cover_order(quantity, action, original_price, market_price):
     """
     Place the cover order.
@@ -151,6 +180,10 @@ def place_cover_order(quantity, action, original_price, market_price):
     write_log(log_msg)
     print('***\n')
 
+
+# In[7]:
+
+
 def price_checker(market_price):
     """
     Called every time market price is updated.
@@ -169,22 +202,35 @@ def price_checker(market_price):
             p[3] = min(p[3], market_price)
     
     for p in positions:
+        
+        # Check if this positions is being cover
+        if(p[4]):
+            continue
+        
         if(p[0] == 1):
             cover_action = sj.constant.Action.Sell
             if(market_price < p[2] - loss_stop):
+                p[4] = True
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
             if(market_price < p[3] - profit_stop):
+                p[4] = True
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
         elif(p[0] == -1):
             cover_action = sj.constant.Action.Buy
             if(market_price > p[2] + loss_stop):
+                p[4] = True
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
             if(market_price > p[3] + profit_stop):
+                p[4] = True
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
+
+
+# In[8]:
+
 
 def fill_positions(deal):
     """
@@ -240,7 +286,7 @@ def fill_positions(deal):
     print('***\n')
     
     if (quantity > 0):
-        positions.append([action, quantity, price, price])
+        positions.append([action, quantity, price, price, 0])
         
         if(action == 1):
             positions = sorted(positions, key=lambda p: p[2], reverse=False)
@@ -253,6 +299,10 @@ def fill_positions(deal):
         write_log(log_msg)
         print('***\n')
 
+
+# In[9]:
+
+
 msg_list = []
 
 def place_cb(stat, msg):
@@ -264,7 +314,6 @@ def place_cb(stat, msg):
     
     global msg_list
     
-    print(dir(msg))
     if(stat == sj.constant.OrderState.FOrder):
         print('An order has been detected.')
         print(f'op_msg: \"{msg["operation"]["op_msg"]}\"')
@@ -280,6 +329,9 @@ def place_cb(stat, msg):
         
     # TODO: update_status may be useful?
     #api.update_status(api.future_account)
+
+
+# In[10]:
 
 
 def send_test_msg(
@@ -305,6 +357,9 @@ def send_test_msg(
     msg["security_type"] = security_type
 
     place_cb(stat, msg)
+
+
+# In[11]:
 
 
 # This is a navie UI implementation. I wonder if there is some framework-like UI availible?
@@ -351,6 +406,7 @@ def UI():
             
         elif(input_text == 'quit'):
             
+            quit()
             return
         
         elif(input_text == 'help'):
@@ -362,6 +418,10 @@ def UI():
             
         else:
             print(f'Command "{input_text}" is not recognized.')
+
+
+# In[ ]:
+
 
 # Main
 
@@ -406,7 +466,7 @@ except ValueError as err:
     traceback.print_exc()
 
 # positions is a list of list
-# Each single list cotains 4 values: Position_type, quantity, price, best_price
+# Each single list cotains 5 values: Position_type, quantity, price, best_price, is_covering
 # Position_type determine the type of positions holding. 0: Neutral, 1: Long, -1: short
 positions = []
 
@@ -415,9 +475,18 @@ market_price = 0
 
 @api.on_tick_fop_v1()
 def quote_callback(exchange:sj.Exchange, tick:sj.TickFOPv1):
+    """
+    Quoting subscribe function. It is called every tick(theoretically)
+    
+    :global param: market_price (int)
+    :return: None
+    """
+    
+    global market_price
     market_price = tick['close']
     price_checker(market_price)
 
+# Subscribe to the close price of the contract
 api.quote.subscribe(
     contract,
     quote_type = sj.constant.QuoteType.Tick, # or 'tick'
@@ -432,4 +501,7 @@ api.quote.subscribe(
 
 # Simply run UI without threading.
 UI()
-sys.exit()
+
+# This does not work quite well with Anaconda prompt
+#sys.exit()
+
