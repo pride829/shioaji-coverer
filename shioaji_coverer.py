@@ -7,7 +7,7 @@
 #TODO: Make a user interface
 #TODO: Write file in chinese
 #TODO: Test
-
+DEBUG_MSG = False
 
 # In[2]:
 
@@ -175,9 +175,11 @@ def place_cover_order(quantity, action, original_price, market_price):
     trade = api.place_order(contract, fut_order)
     
     print('***')
-    log_msg = f'An cover order with action={action}, quantity={quantity} has been placed!\nOriginal price:{original_price}, Market price: {market_price}.'
+    log_msg = f'An cover order with action={action}, quantity={quantity} has been placed!'
     print(log_msg)
     write_log(log_msg)
+    print(f'Trade msg: {trade.status.msg}')
+    write_log(f'Trade msg: {trade.status.msg}')
     print('***\n')
 
 
@@ -197,9 +199,9 @@ def price_checker(market_price):
     
     for p in positions:
         if(p[0] == 1):
-            p[3] = max(p[3], market_price)
+            p[3] = int(max(p[3], market_price))
         elif(p[0] == -1 and market_price != 0):
-            p[3] = min(p[3], market_price)
+            p[3] = int(min(p[3], market_price))
     
     for p in positions:
         
@@ -209,27 +211,31 @@ def price_checker(market_price):
         
         if(p[0] == 1):
             cover_action = sj.constant.Action.Sell
-            if(market_price < p[2] - loss_stop):
+            if(market_price < (p[2] - loss_stop)):
                 p[4] = True
+                print(f"A loss stop has been detected. Market price: {market_price}, buy price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
-            if(market_price < p[3] - profit_stop):
+            if(market_price < (p[3] - profit_stop)):
                 p[4] = True
+                print(f"A profit stop has been detected. Market price: {market_price}, buy price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
         elif(p[0] == -1):
             cover_action = sj.constant.Action.Buy
-            if(market_price > p[2] + loss_stop):
+            if(market_price > (p[2] + loss_stop)):
                 p[4] = True
+                print(f"A loss stop has been detected. Market price: {market_price}, sell price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
-            if(market_price > p[3] + profit_stop):
+            if(market_price > (p[3] + profit_stop)):
                 p[4] = True
+                print(f"A profit stop has been detected. Market price: {market_price}, sell price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
 
 
-# In[8]:
+# In[62]:
 
 
 def fill_positions(deal):
@@ -286,7 +292,9 @@ def fill_positions(deal):
     print('***\n')
     
     if (quantity > 0):
-        positions.append([action, quantity, price, price, 0])
+        
+        # Ensure the data type is int
+        positions.append([action, int(quantity), int(price), int(price), False])
         
         if(action == 1):
             positions = sorted(positions, key=lambda p: p[2], reverse=False)
@@ -362,6 +370,43 @@ def send_test_msg(
 # In[11]:
 
 
+def update_config():
+    
+    global intense_begin_time, intense_end_time, normal_profit_stop, normal_loss_stop, intense_profit_stop, intense_loss_stop
+    global future_name, future_code
+    
+    pre_future_code = None
+    while(True):
+        
+        with open('config.json') as f:
+            config_data = json.load(f)
+
+            intense_begin_time = datetime.datetime.strptime(config_data['intense_begin'], '%H:%M').time()
+            intense_end_time = datetime.datetime.strptime(config_data['intense_end'], '%H:%M').time()
+
+            normal_profit_stop = int(config_data['normal_profit_stop'])
+            normal_loss_stop = int(config_data['normal_loss_stop'])
+            intense_profit_stop = int(config_data['intense_profit_stop'])
+            intense_loss_stop = int(config_data['intense_loss_stop'])
+
+            future_name = config_data['future_name']
+        
+            # If auto_recent_future, get the most recent future code.
+            if(config_data['auto_recent_future'].lower() == 'true'):
+                future_code = get_future_code(future_name)
+            else:
+                future_code = config_data['future_code']
+        
+            if(pre_future_code != future_code):
+                print(f'Future code has been set to {future_code}')
+                pre_future_code = future_code
+        
+            time.sleep(1)
+
+
+# In[12]:
+
+
 # This is a navie UI implementation. I wonder if there is some framework-like UI availible?
 
 def UI():
@@ -371,7 +416,7 @@ def UI():
     
     :global param: market_price (int)
     """
-    
+    print("Waiting for commands...")
     while(True):
         
         try:
@@ -382,6 +427,7 @@ def UI():
         if(input_text == str('price')):
             
             print(f'Market price for {contract["code"]}: {market_price}')
+            print(f'Profit stop: {profit_stop}, loss stop: {loss_stop}')
             
         elif(input_text == 'list'):
             
@@ -411,7 +457,7 @@ def UI():
         
         elif(input_text == 'help'):
             
-            print('price: Get the market price of currently contract.')
+            print('price: Get the market price of currently contract. Also show the stop prices.')
             print('list: List the position currently tracking.')
             print('contract: Get the currently contract.')
             print('quit: Exit the program.')
@@ -420,7 +466,7 @@ def UI():
             print(f'Command "{input_text}" is not recognized.')
 
 
-# In[ ]:
+# In[13]:
 
 
 # Main
@@ -429,26 +475,15 @@ api = shioaji_login.login()
 
 api.set_order_callback(place_cb)
 
-# Parsing config.json
+# Parsing config.json every second
 
-with open('config.json') as f:
-    config_data = json.load(f)
+intense_begin_time = intense_end_time = normal_profit_stop = normal_loss_stop = intense_profit_stop = intense_loss_stop = None
+future_name = future_code = None
 
-    intense_begin_time = datetime.datetime.strptime(config_data['intense_begin'], '%H:%M').time()
-    intense_end_time = datetime.datetime.strptime(config_data['intense_end'], '%H:%M').time()
+update_config_thread = threading.Thread(target = update_config)
+update_config_thread.start()
 
-    normal_profit_stop = int(config_data['normal_profit_stop'])
-    normal_loss_stop = int(config_data['normal_loss_stop'])
-    intense_profit_stop = int(config_data['intense_profit_stop'])
-    intense_loss_stop = int(config_data['intense_loss_stop'])
-
-    future_name = config_data['future_name']
-
-    # If auto_recent_future, get the most recent future code.
-    if(config_data['auto_recent_future'].lower() == 'true'):
-        future_code = get_future_code(future_name)
-    else:
-        future_code = config_data['future_code']
+time.sleep(3)
 
 # profit_stop and loss_stop need to be initialize as None before calling stop_price_updater
 profit_stop = None
@@ -483,7 +518,7 @@ def quote_callback(exchange:sj.Exchange, tick:sj.TickFOPv1):
     """
     
     global market_price
-    market_price = tick['close']
+    market_price = int(tick['close'])
     price_checker(market_price)
 
 # Subscribe to the close price of the contract
@@ -492,6 +527,10 @@ api.quote.subscribe(
     quote_type = sj.constant.QuoteType.Tick, # or 'tick'
     version = sj.constant.QuoteVersion.v1, # or 'v1'
 )
+
+
+# In[14]:
+
 
 # Start UI
 
@@ -504,4 +543,8 @@ UI()
 
 # This does not work quite well with Anaconda prompt
 #sys.exit()
+
+
+
+
 

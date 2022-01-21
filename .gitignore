@@ -2,4 +2,6 @@
 /logs
 /__pycache__
 /.ipynb_checkpoints
+/sinopac
+/coverer_logs
 shioaji.log
