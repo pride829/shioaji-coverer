@@ -1,11 +1,13 @@
 {
   "normal_profit_stop": "15",
   "normal_loss_stop": "15",
-  "intense_profit_stop": "4",
-  "intense_loss_stop": "4",
+  "intense_profit_stop": "100",
+  "intense_loss_stop": "100",
   
   "intense_begin": "13:20",
   "intense_end": "09:03",
+  
+  "auto_cover": "23:12:40",
   
   "future_name": "MXF",
   "auto_recent_future": "True",
