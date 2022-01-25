@@ -1,8 +1,8 @@
 {
   "normal_profit_stop": "15",
   "normal_loss_stop": "15",
-  "intense_profit_stop": "15",
-  "intense_loss_stop": "15",
+  "intense_profit_stop": "3",
+  "intense_loss_stop": "4",
   
   "intense_begin": "13:20",
   "intense_end": "09:03",
