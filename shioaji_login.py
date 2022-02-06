@@ -23,14 +23,22 @@ def login():
 
     api = sj.Shioaji(simulation=False) 
     
-    api.login(
+    api_login = api.login(
         person_id = account_data['person_id'],
         passwd = account_data['passwd'], 
         #contracts_cb=lambda security_type: print(f"{repr(security_type)} fetch done.")
     )
+    
     print(f'Login with ID {account_data["person_id"]}')
+    print(f'Login status: {api_login}')
     
     activate = api.activate_ca(ca_path=ca_path, ca_passwd=account_data['ca_passwd'], person_id=account_data['person_id'])
-    print(f'Activating CA at the path {ca_path}')
+    
+    if(activate):
+        print(f'Activating CA at the path {ca_path}')
+        print('\n')
+    else:
+        print(f'Failed! Can not activate CA at the path {ca_path}')
+        print('\n')
     
     return api
