@@ -221,6 +221,7 @@ def auto_cover():
     while(True):
         
         now = datetime.datetime.now()
+        
         if(now.time().replace(microsecond=0) == auto_cover_time):
             print('***It is now auto cover time. All tracking positions will be covered.***')
             list_positions()
@@ -255,10 +256,15 @@ def price_checker(market_price):
     
     for p in positions:
         if(p[0] == 1):
-            p[3] = int(max(p[3], market_price))
+            if(market_price > (p[2] + profit_stop)):
+                # Best price should at least be greater than buy price + profit_stop
+                p[3] = int(max(p[3], market_price))
         elif(p[0] == -1 and market_price != 0):
-            p[3] = int(min(p[3], market_price))
+            if(market_price < (p[2] - profit_stop)):
+                # Best price should at least be less than sell price - profit_stop
+                p[3] = int(min(p[3], market_price))
     
+    #p[3] is the best price
     for p in positions:
         
         # Check if this positions is being cover
@@ -272,7 +278,8 @@ def price_checker(market_price):
                 print(f"A loss stop has been detected. Market price: {market_price}, buy price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
-            elif(market_price <= (p[3] - profit_stop)):
+            elif(market_price <= (p[3] - profit_stop) and (market_price > p[2])):
+                # Sell price should be greater than original price
                 p[4] = True
                 print(f"A profit stop has been detected. Market price: {market_price}, buy price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
@@ -284,7 +291,8 @@ def price_checker(market_price):
                 print(f"A loss stop has been detected. Market price: {market_price}, sell price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
                 break
-            elif(market_price >= (p[3] + profit_stop)):
+            elif(market_price >= (p[3] + profit_stop) and (market_price < p[2])):
+                # Buy price should be less than original price
                 p[4] = True
                 print(f"A profit stop has been detected. Market price: {market_price}, sell price: {p[2]}, best price: {p[3]}")
                 place_cover_order(p[1], cover_action, p[2], market_price)
@@ -350,11 +358,13 @@ def fill_positions(deal):
     if (quantity > 0):
         
         # Ensure the data type is int
-        positions.append([action, int(quantity), int(price), int(price), False])
+        
         
         if(action == 1):
+            positions.append([action, int(quantity), int(price), int(price), False])
             positions = sorted(positions, key=lambda p: p[2], reverse=False)
         else:
+            positions.append([action, int(quantity), int(price), int(price), False])
             positions = sorted(positions, key=lambda p: p[2], reverse=True)
 
         print('***')
@@ -579,6 +589,8 @@ def quote_callback(exchange:sj.Exchange, tick:sj.TickFOPv1):
         print(market_price)
     price_checker(market_price)
 
+
+
 # Subscribe to the close price of the contract
 api.quote.subscribe(
     contract,
@@ -587,17 +599,5 @@ api.quote.subscribe(
 )
 
 
-# In[16]:
-
-
-# Start UI
-
-# Start UI with thread cause some EOF exceptions?
-#UI_thread = threading.Thread(target = UI)
-#UI_thread.start()
-
 # Simply run UI without threading.
 UI()
-
-# This does not work quite well with Anaconda prompt
-#sys.exit()
