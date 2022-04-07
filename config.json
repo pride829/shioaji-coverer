@@ -11,5 +11,10 @@
   
   "future_name": "MXF",
   "auto_recent_future": "True",
-  "future_code": "MXFA2"
+  "future_code": "MXFA2",
+  
+  "auto_order_time": "12",
+  "auto_buy_trigger": "1",
+  "auto_sell_trigger": "1",
+  "auto_order_testing": "True"
 }

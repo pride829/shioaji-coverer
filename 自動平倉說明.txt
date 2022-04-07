@@ -13,7 +13,7 @@
 將憑證檔案(Sinopac.pfx)放到C:\sinopac底下。
 
 cd至shioaji-coverer資料夾底下，執行
-```py shioaji_coverer.py```
+```python shioaji_coverer.py```
 
 ## 程式設置:
 
@@ -49,3 +49,9 @@ Cover order had been sent如果為True，代表該部位因為某些原因已經
 
 當市場價格超過***或等於***停損停利價格時即會出發停損停利。
 
+## 憑證:
+
+遇到"憑證驗章失敗,請至3310憑證管理畫面憑證查詢狀態"
+https://www.sinotrade.com.tw/CSCenter/CSCenter_13_3
+註銷原本的憑證，重新申請一個新的，然後將新的憑證放進account/
+如果沒有原本的憑證，沒辦法直接申請新的，這應該是永豐金證券憑證管理的bug。
