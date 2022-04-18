@@ -32,25 +32,21 @@ future_name：會下單的商品。TXF代表台指期，MXF代表小台期。如
 
 如果auto_recent_future設置為True，程式會自動抓取最近一期的合約；如果為False，程式則會設定future_code為合約。如果auto_recent_future為True，則程式會忽略future_code。
 
+auto_order_consec_tick: 程式最多會判斷幾個tick之內是否有大漲或大跌的行為。
 auto_order_time為判斷價格是否劇烈波動的最小時間區間。
 auto_buy_trigger為判斷價格是否劇漲的價位。
 auto_sell_trigger為判斷價格是否劇跌的價位。
+auto_order_time_report: 程式自動回報時間和價格的秒數。
 
-舉例來說：
-	auto_ordertime = 10
-	auto_buy_trigger = 3
-	auto_sell_trigger = 5
-	價格在過去10秒之間漲了4塊，則會買進一口。
-	價格在過去3秒內跌了5.5塊，則會賣出一口。
-	
 auto_order_testing：設置是否要真的成交。如果auto_order_testing = true，那麼Shioaji Auto Order會在觸發下單時印出Testing訊息，但不會真的成交。
 
 ## 程式邏輯：
 	
-紀錄過去auto_order_time秒內的價格，如果觸發下單，則會清空價格紀錄，以防錯誤的連續下單。
-***這個程式在連續觸發條件時會連續下單，舉例來說：假如10秒內漲了3塊，下個10秒又漲了3塊，則這兩次觸發都會下一口多單，請謹慎使用。***
+紀錄過去auto_order_consec_tick秒內的價格，如果過去n個tick皆為上漲/下跌，且上漲/下跌幅度每個tick都比前一個tick更大，且這n個tick的時間差在auto_order_time之內，則會下單。
+
+如果觸發下單，則會清空價格紀錄，以防錯誤的連續下單。
 	
-	
+如果目前有偵測到的部位，則會等手上沒有部位之後，才會下單。
 	
 	
 	

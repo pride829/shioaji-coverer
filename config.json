@@ -14,9 +14,9 @@
   "future_code": "MXFA2",
   
   "auto_order_time": "10",
-  "auto_order_consec_tick": "3",
-  "auto_buy_trigger": "5",
-  "auto_sell_trigger": "5",
-  "auto_order_testing": "True",
+  "auto_order_consec_tick": "5",
+  "auto_buy_trigger": "0.5",
+  "auto_sell_trigger": "0.5",
+  "auto_order_testing": "False",
   "auto_order_time_report": "10"
 }
