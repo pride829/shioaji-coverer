@@ -18,5 +18,5 @@
   "auto_buy_trigger": "15",
   "auto_sell_trigger": "15",
   "auto_order_testing": "False",
-  "auto_order_time_report": "3"
+  "auto_order_time_report": "30"
 }
