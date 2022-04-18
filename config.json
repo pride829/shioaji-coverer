@@ -13,10 +13,10 @@
   "auto_recent_future": "True",
   "future_code": "MXFA2",
   
-  "auto_order_time": "2",
-  "auto_order_consec_tick": "5",
-  "auto_buy_trigger": "15",
-  "auto_sell_trigger": "15",
-  "auto_order_testing": "False",
-  "auto_order_time_report": "30"
+  "auto_order_time": "10",
+  "auto_order_consec_tick": "3",
+  "auto_buy_trigger": "5",
+  "auto_sell_trigger": "5",
+  "auto_order_testing": "True",
+  "auto_order_time_report": "10"
 }
