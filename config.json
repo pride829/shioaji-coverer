@@ -1,8 +1,8 @@
 {
-  "normal_profit_stop": "15",
+  "normal_profit_stop": "15", 
   "normal_loss_stop": "15",
-  "intense_profit_stop": "3",
-  "intense_loss_stop": "3",
+  "intense_profit_stop": "5",
+  "intense_loss_stop": "10",
   
   "intense_begin": "13:20",
   "intense_end": "09:03",
@@ -13,10 +13,11 @@
   "auto_recent_future": "True",
   "future_code": "MXFA2",
   
-  "auto_order_time": "10",
+  "auto_order_time": "3",
   "auto_order_consec_tick": "5",
-  "auto_buy_trigger": "0.5",
-  "auto_sell_trigger": "0.5",
+  "auto_buy_trigger": "15",
+  "auto_sell_trigger": "15",
   "auto_order_testing": "False",
-  "auto_order_time_report": "10"
+  "auto_order_time_report": "60"
+  
 }
