@@ -117,8 +117,6 @@ def send_test_msg(
     place_cb(stat, msg)
 
 
-
-
 # In[6]:
 
 
@@ -130,16 +128,7 @@ def place_order(quantity, action):
     :return: None
     """
     
-    global auto_order_testing_day, auto_order_testing_night, positions
-    
-    auto_order_testing = True
-    
-    now = datetime.datetime.now()
-    
-    if now.time() < datetime.time(5, 0, 0) or now.time() >= datetime.time(15, 0, 0):
-        auto_order_testing = auto_order_testing_night
-    elif now.time() >= datetime.time(8, 45, 0) and now.time() < datetime.time(13, 45, 0):
-        auto_order_testing = auto_order_testing_day
+    global auto_order_testing, positions
     
     if positions:
         print('***')
@@ -201,7 +190,7 @@ def get_future_code(future_name):
     year = now.year
     first_weekday = now.replace(day=1).weekday()
     
-    # Calculate the day of the third wednesday
+    # Calculate the dayt of the third wednesday
     if(first_weekday < 3):
         third_wednesday = 17 - first_weekday
     else:
@@ -231,39 +220,28 @@ def get_future_code(future_name):
 def update_config():
     
     global future_name, future_code
-    global order_quantity
-    global auto_order_consec_tick, auto_order_time, auto_buy_trigger, auto_sell_trigger
-    global auto_order_testing_day, auto_order_testing_night
+    global auto_order_consec_tick, auto_order_time, auto_buy_trigger, auto_sell_trigger, auto_order_testing
     global auto_order_time_report
     
-    pre_order_quantity = None
     pre_future_code = pre_auto_order_time = None
-    pre_auto_buy_trigger = pre_auto_sell_trigger = None
-    pre_auto_order_testing_day = pre_auto_order_testing_night = None
+    pre_auto_buy_trigger = pre_auto_sell_trigger = pre_auto_order_testing = None
     pre_auto_order_consec_tick = pre_auto_order_time_report = None
     
     
     
     while(True):
         
-        with open('auto_order_config.json') as f:
+        with open('config.json') as f:
             config_data = json.load(f)
             
             future_name = config_data['future_name']
-            order_quantity = int(config_data['order_quantity'])
             auto_order_time = float(config_data['auto_order_time'])
             auto_buy_trigger = float(config_data['auto_buy_trigger'])
             auto_sell_trigger = float(config_data['auto_sell_trigger'])
-            if config_data['auto_order_testing_day'].lower() == "false":
-                auto_order_testing_day = False
+            if config_data['auto_order_testing'] == "False":
+                auto_order_testing = False
             else:
-                auto_order_testing_day = True
-                
-            if config_data['auto_order_testing_night'].lower() == "false":
-                auto_order_testing_night = False
-            else:
-                auto_order_testing_night = True
-                
+                auto_order_testing = True
             auto_order_consec_tick = int(config_data['auto_order_consec_tick'])
             auto_order_time_report = float(config_data['auto_order_time_report'])
             
@@ -276,10 +254,6 @@ def update_config():
             if(pre_future_code != future_code):
                 print(f'Future code has been set to {future_code}')
                 pre_future_code = future_code
-            
-            if(pre_order_quantity != order_quantity):
-                print(f'Order quantity has been set to {order_quantity}')
-                pre_order_quantity = order_quantity
             
             if(pre_auto_order_time != auto_order_time):
                 print(f'Auto order time has been set to {auto_order_time}')
@@ -297,13 +271,9 @@ def update_config():
                 print(f'Auto sell trigger has been set to {auto_sell_trigger}')
                 pre_auto_sell_trigger = auto_sell_trigger
                 
-            if(pre_auto_order_testing_day != auto_order_testing_day):
-                print(f'Auto order testing day has been set to {auto_order_testing_day}')
-                pre_auto_order_testing_day = auto_order_testing_day
-                
-            if(pre_auto_order_testing_night != auto_order_testing_night):
-                print(f'Auto order testing night has been set to {auto_order_testing_night}')
-                pre_auto_order_testing_night = auto_order_testing_night
+            if(pre_auto_order_testing != auto_order_testing):
+                print(f'Auto order testing has been set to {auto_order_testing}')
+                pre_auto_order_testing = auto_order_testing
                 
             if(pre_auto_order_time_report != auto_order_time_report):
                 print(f'Auto order time report period has been set to {auto_order_time_report}')
@@ -368,11 +338,11 @@ def OnRealTimeQuote(symbol):
             msg_log += "Ticks in between:\n"
             for j in range(i, len(price_history)-1):
                 msg_log += str(price_history[j][0]) + ", " + str(price_history[j][1]) + "\n"
-            msg_log += "NQ_Price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1])
+            msg_log += "NQ_Price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1]) + "\n"
             write_log(msg_log)
             print(msg_log)
             trade_lock = True
-            place_order(order_quantity, sj.constant.Action.Buy)
+            place_order(1, sj.constant.Action.Buy)
             price_history = []
             trade_lock = False
             return
@@ -383,11 +353,11 @@ def OnRealTimeQuote(symbol):
             msg_log += "Ticks in between:\n"
             for j in range(i, len(price_history)-1):
                 msg_log += str(price_history[j][0]) + ", " + str(price_history[j][1]) + "\n"
-            msg_log += "NQ_Price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1])
+            msg_log += "NQ_Price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1]) + "\n"
             write_log(msg_log)
             print(msg_log)
             trade_lock = True
-            place_order(order_quantity, sj.constant.Action.Sell)
+            place_order(1, sj.constant.Action.Sell)
             price_history = []
             trade_lock = False
             return
@@ -436,8 +406,7 @@ def fill_positions(deal):
     """
     :global param positions: (list)
     
-    :return: None
-    """
+    :return: None//    """
 
     global positions
     # First check if the type and month match the tracking future.
@@ -478,7 +447,6 @@ def fill_positions(deal):
         else:
             quantity -= positions[0][1]
             del positions[0]
-
     print('***')
     log_msg = f'A position with type={action_text}, quantity={ori_quantity}, price={price} has been recorded!'
     print(log_msg)
@@ -503,6 +471,8 @@ def fill_positions(deal):
         write_log(log_msg)
         print('***\n')
 
+
+    list_positions()
 
 # In[12]:
 
@@ -537,11 +507,9 @@ def place_cb(stat, msg):
 
 future_name = future_code = None
 
-order_quantity = None
-
 auto_order_time = auto_buy_trigger = auto_sell_trigger = None
 
-auto_order_testing_day = auto_order_testing_night = auto_order_time_report = None
+auto_order_testing = auto_order_time_report = None
 
 trade_lock = False
 
@@ -587,8 +555,9 @@ g_QuoteSession = q_data["SessionKey"]
 
 
 #查詢指定合约訊息
-##quoteSymbol = "TC.F.CME.NQ.HOT" 小那斯達克
+#quoteSymbol = "TC.F.CME.NQ.HOT"
 quoteSymbol = "TC.F.TWF.FITX.HOT"
+
 
 print("Subscribing to TWF.FITX.HOT")
 
@@ -603,12 +572,3 @@ g_QuoteZMQ.SubQuote(g_QuoteSession, quoteSymbol)
 time.sleep(5)
 report_time_thread = threading.Thread(target = report_time)
 report_time_thread.start()
-
-"""
-台灣是UTC＋8
-那斯達克: 標準時間（EST）為UTC-5，夏令時間（EDT）為UTC-4。開盤時間：週一至週五上午9:30至下午4：00
-也就是說開盤時間為台灣時間周一22:30~週五17:00，平常為22:30~17:00
-
-
-"""
-

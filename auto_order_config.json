@@ -1,0 +1,19 @@
+{
+  "auto_order_time": "10",
+  "auto_order_consec_tick": "2",
+  
+  "auto_buy_trigger": "10",
+  "auto_sell_trigger": "10",
+  
+  "order_quantity": "1",
+  
+  "auto_order_testing_day": "True",
+  "auto_order_testing_night": "True",
+  
+  "auto_order_time_report": "1",
+
+  "future_name": "MXF",
+  "auto_recent_future": "True",
+  "future_code": "MXFA2"
+  
+}

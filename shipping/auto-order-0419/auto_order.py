@@ -587,10 +587,9 @@ g_QuoteSession = q_data["SessionKey"]
 
 
 #查詢指定合约訊息
-##quoteSymbol = "TC.F.CME.NQ.HOT" 小那斯達克
-quoteSymbol = "TC.F.TWF.FITX.HOT"
+quoteSymbol = "TC.F.CME.NQ.HOT"
 
-print("Subscribing to TWF.FITX.HOT")
+print("Subscribing to CME.NQ.HOT")
 
 t2 = threading.Thread(target = quote_sub_th,args=(g_QuoteZMQ,q_data["SubPort"],))
 t2.start()

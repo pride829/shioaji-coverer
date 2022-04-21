@@ -7,16 +7,11 @@
   "intense_begin": "13:20",
   "intense_end": "09:03",
   
-  "auto_cover": "13:44:00",
+  "auto_cover_day": "13:44:00",
+  "auto_cover_night": "04:59:00",
   
   "future_name": "MXF",
   "auto_recent_future": "True",
-  "future_code": "MXFA2",
+  "future_code": "MXFA2"
   
-  "auto_order_time": "10",
-  "auto_order_consec_tick": "5",
-  "auto_buy_trigger": "0.5",
-  "auto_sell_trigger": "0.5",
-  "auto_order_testing": "False",
-  "auto_order_time_report": "10"
 }
