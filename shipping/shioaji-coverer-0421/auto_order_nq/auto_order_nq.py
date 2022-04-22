@@ -46,7 +46,7 @@ def write_log(text):
     """
 
     now = datetime.datetime.now()
-    path = 'auto_order_logs'
+    path = 'auto_order_nq_logs'
     try:
         Path(path).mkdir(parents=True, exist_ok=True)
     except FileExistsError:
@@ -115,8 +115,6 @@ def send_test_msg(
     msg["security_type"] = security_type
 
     place_cb(stat, msg)
-
-
 
 
 # In[6]:
@@ -246,7 +244,7 @@ def update_config():
     
     while(True):
         
-        with open('auto_order_config.json') as f:
+        with open('auto_order_nq_config.json') as f:
             config_data = json.load(f)
             
             future_name = config_data['future_name']
@@ -315,13 +313,25 @@ def update_config():
 # In[9]:
 
 
+count = 0
+
+
+# In[10]:
+
+
+
 # 在這裡下單
 def OnRealTimeQuote(symbol):
+    
+    
+    global count
+    count += 1
     
     global NQ_price, price_history, trade_lock
     
     #print("OnRealTimeQuote: " + str(NQ_price))
     
+    #print(NQ_price, count)
     # price_history(不含最新的一個price)的長度即為中間間隔幾個tick的長度
     while len(price_history) > auto_order_consec_tick:
         del price_history[0]
@@ -393,7 +403,7 @@ def OnRealTimeQuote(symbol):
             return
 
 
-# In[10]:
+# In[11]:
 
 
 def quote_sub_th(obj,sub_port,filter = ""):
@@ -429,7 +439,7 @@ def quote_sub_th(obj,sub_port,filter = ""):
     return
 
 
-# In[11]:
+# In[12]:
 
 
 def fill_positions(deal):
@@ -504,7 +514,7 @@ def fill_positions(deal):
         print('***\n')
 
 
-# In[12]:
+# In[13]:
 
 
 msg_list = []
@@ -532,7 +542,7 @@ def place_cb(stat, msg):
         fill_positions(msg)
 
 
-# In[13]:
+# In[14]:
 
 
 future_name = future_code = None
@@ -565,7 +575,7 @@ except ValueError as err:
 positions = []
 
 
-# In[14]:
+# In[15]:
 
 
 NQ_price = 0

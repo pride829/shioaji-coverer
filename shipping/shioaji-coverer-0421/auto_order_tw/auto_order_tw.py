@@ -26,15 +26,21 @@ importlib.reload(shioaji_login)
 # In[2]:
 
 
-def report_time():
-    global NQ_price
-    
-    while True:
-        print("Time report:", datetime.datetime.now().strftime("%H:%M:%S"), ", price:", NQ_price)
-        time.sleep(auto_order_time_report)
+DEBUG_MSG = False
 
 
 # In[3]:
+
+
+def report_time():
+    global TXF_price
+    
+    while True:
+        print("Time report:", datetime.datetime.now().strftime("%H:%M:%S"), ", price:", TXF_price)
+        time.sleep(auto_order_time_report)
+
+
+# In[4]:
 
 
 def write_log(text):
@@ -46,7 +52,7 @@ def write_log(text):
     """
 
     now = datetime.datetime.now()
-    path = 'auto_order_logs'
+    path = 'auto_order_tw_logs'
     try:
         Path(path).mkdir(parents=True, exist_ok=True)
     except FileExistsError:
@@ -64,7 +70,7 @@ def write_log(text):
     
 
 
-# In[4]:
+# In[5]:
 
 
 def list_positions():
@@ -89,7 +95,7 @@ def list_positions():
     
 
 
-# In[5]:
+# In[6]:
 
 
 def send_test_msg(
@@ -117,9 +123,7 @@ def send_test_msg(
     place_cb(stat, msg)
 
 
-
-
-# In[6]:
+# In[7]:
 
 
 def place_order(quantity, action):
@@ -184,7 +188,7 @@ def place_order(quantity, action):
     time.sleep(10)
 
 
-# In[7]:
+# In[8]:
 
 
 def get_future_code(future_name):
@@ -225,7 +229,7 @@ def get_future_code(future_name):
     return future_code
 
 
-# In[8]:
+# In[9]:
 
 
 def update_config():
@@ -246,7 +250,7 @@ def update_config():
     
     while(True):
         
-        with open('auto_order_config.json') as f:
+        with open('auto_order_tw_config.json') as f:
             config_data = json.load(f)
             
             future_name = config_data['future_name']
@@ -312,26 +316,38 @@ def update_config():
             time.sleep(1)
 
 
-# In[9]:
+# In[10]:
+
+
+count = 0
+
+
+# In[11]:
+
 
 
 # 在這裡下單
-def OnRealTimeQuote(symbol):
+def OnRealTimeQuote(price):
     
-    global NQ_price, price_history, trade_lock
     
-    #print("OnRealTimeQuote: " + str(NQ_price))
+    global count
+    count += 1
     
+    global TXF_price, price_history, trade_lock
+    
+    #print("OnRealTimeQuote: " + str(TXF_price))
+    
+    #print(TXF_price, count)
     # price_history(不含最新的一個price)的長度即為中間間隔幾個tick的長度
     while len(price_history) > auto_order_consec_tick:
         del price_history[0]
     
-    NQ_price = float(symbol['TradingPrice'])
-    if NQ_price == 0:
+    TXF_price = price
+    if TXF_price == 0:
         return
     
     
-    price_history.append([NQ_price, datetime.datetime.now()])
+    price_history.append([TXF_price, datetime.datetime.now()])
     
     if len(price_history) < 2:
         return
@@ -364,11 +380,11 @@ def OnRealTimeQuote(symbol):
         
         if price_diff > 0 and         tick_diff > auto_buy_trigger:
             msg_log = "A huge increasing in price has been detected!\n"
-            msg_log += "NQ_Price " + str((price_history[-1][1] - price_history[i-1][1]).total_seconds()) +             " seconds ago: \n" + str(price_history[i-1][0]) +             ", " + str(price_history[i-1][1]) +             "\n"
+            msg_log += "TXF_price " + str((price_history[-1][1] - price_history[i-1][1]).total_seconds()) +             " seconds ago: \n" + str(price_history[i-1][0]) +             ", " + str(price_history[i-1][1]) +             "\n"
             msg_log += "Ticks in between:\n"
             for j in range(i, len(price_history)-1):
                 msg_log += str(price_history[j][0]) + ", " + str(price_history[j][1]) + "\n"
-            msg_log += "NQ_Price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1])
+            msg_log += "TXF_price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1])
             write_log(msg_log)
             print(msg_log)
             trade_lock = True
@@ -379,11 +395,11 @@ def OnRealTimeQuote(symbol):
         
         if price_diff < 0 and         tick_diff < -auto_sell_trigger:
             msg_log = "A huge decreasing in price has been detected!\n"
-            msg_log += "NQ_Price " + str((price_history[-1][1] - price_history[i-1][1]).total_seconds()) +             " seconds ago: \n" + str(price_history[i-1][0]) +             ", " + str(price_history[i-1][1]) +             "\n"
+            msg_log += "TXF_price " + str((price_history[-1][1] - price_history[i-1][1]).total_seconds()) +             " seconds ago: \n" + str(price_history[i-1][0]) +             ", " + str(price_history[i-1][1]) +             "\n"
             msg_log += "Ticks in between:\n"
             for j in range(i, len(price_history)-1):
                 msg_log += str(price_history[j][0]) + ", " + str(price_history[j][1]) + "\n"
-            msg_log += "NQ_Price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1])
+            msg_log += "TXF_price now: \n" + str(price_history[-1][0]) + ", " + str(price_history[-1][1])
             write_log(msg_log)
             print(msg_log)
             trade_lock = True
@@ -393,43 +409,7 @@ def OnRealTimeQuote(symbol):
             return
 
 
-# In[10]:
-
-
-def quote_sub_th(obj,sub_port,filter = ""):
-    socket_sub = obj.context.socket(zmq.SUB)
-    #socket_sub.RCVTIMEO=7000   #ZMQ超時設定
-    socket_sub.connect("tcp://127.0.0.1:%s" % sub_port)
-    socket_sub.setsockopt_string(zmq.SUBSCRIBE,filter)
-    while(True):
-        message = (socket_sub.recv()[:-1]).decode("utf-8")
-        index =  re.search(":",message).span()[1]  # filter
-        message = message[index:]
-        message = json.loads(message)
-        #for message in messages:
-        if(message["DataType"]=="REALTIME"):
-            OnRealTimeQuote(message["Quote"])
-        elif(message["DataType"]=="GREEKS"):
-            OnGreeks(message["Quote"])
-        elif(message["DataType"]=="TICKS" or message["DataType"]=="1K" or message["DataType"]=="DK" ):
-            #print("@@@@@@@@@@@@@@@@@@@@@@@",message)
-            strQryIndex = ""
-            while(True):
-                s_history = obj.GetHistory(g_QuoteSession, message["Symbol"], message["DataType"], message["StartTime"], message["EndTime"], strQryIndex)
-                historyData = s_history["HisData"]
-                if len(historyData) == 0:
-                    break
-                last = ""
-                for data in historyData:
-                    last = data
-                    print("歷史行情：Time:%s, Volume:%s, QryIndex:%s" % (data["Time"], data["Volume"], data["QryIndex"]))
-                
-                strQryIndex = last["QryIndex"]
-                    
-    return
-
-
-# In[11]:
+# In[12]:
 
 
 def fill_positions(deal):
@@ -504,7 +484,7 @@ def fill_positions(deal):
         print('***\n')
 
 
-# In[12]:
+# In[13]:
 
 
 msg_list = []
@@ -532,7 +512,7 @@ def place_cb(stat, msg):
         fill_positions(msg)
 
 
-# In[13]:
+# In[14]:
 
 
 future_name = future_code = None
@@ -565,44 +545,53 @@ except ValueError as err:
 positions = []
 
 
-# In[14]:
+# In[15]:
 
 
-NQ_price = 0
+TXF_price = 0
 
 price_history = []
 
-g_QuoteZMQ = None
-g_QuoteSession = ""
-
-#登入(與 TOUCHANCE zmq 連線用，不可改)
-g_QuoteZMQ = QuoteAPI("ZMQ","8076c9867a372d2a9a814ae710c256e2")
-q_data = g_QuoteZMQ.Connect("51237")
-print(q_data)
-
-if q_data["Success"] != "OK":
-    print("[quote]connection failed")
-
-g_QuoteSession = q_data["SessionKey"]
+contract_TXF = api.Contracts.Futures[get_future_code("TXF")]
+try:
+    if(not contract_TXF):
+        raise ValueError(f'Error: contract {get_future_code("TXF")} does not exsits.')
+except ValueError as err:
+    traceback.print_exc()
 
 
-#查詢指定合约訊息
-##quoteSymbol = "TC.F.CME.NQ.HOT" 小那斯達克
-quoteSymbol = "TC.F.TWF.FITX.HOT"
+@api.on_tick_fop_v1()
+def quote_callback(exchange:sj.Exchange, tick:sj.TickFOPv1):
+    """
+    Quoting subscribe function. It is called every tick(theoretically)
+    
+    :global param: TXF_price (int)
+    :return: None
+    """
+    
+    global TXF_price
+    TXF_price = int(tick['close'])
+    if(DEBUG_MSG):
+        print(TXF_price)
+    OnRealTimeQuote(TXF_price)
 
-print("Subscribing to TWF.FITX.HOT")
 
-t2 = threading.Thread(target = quote_sub_th,args=(g_QuoteZMQ,q_data["SubPort"],))
-t2.start()
-#實時行情訂閱
-#解除訂閱
-g_QuoteZMQ.UnsubQuote(g_QuoteSession, quoteSymbol)
-#訂閱實時行情
-g_QuoteZMQ.SubQuote(g_QuoteSession, quoteSymbol)
+
+# Subscribe to the close price of the contract
+api.quote.subscribe(
+    contract_TXF,
+    quote_type = sj.constant.QuoteType.Tick, # or 'tick'
+    version = sj.constant.QuoteVersion.v1, # or 'v1'
+)
+    
+print("Subscribing to " + get_future_code("TXF"))
+
 
 time.sleep(5)
 report_time_thread = threading.Thread(target = report_time)
 report_time_thread.start()
+
+
 
 """
 台灣是UTC＋8
