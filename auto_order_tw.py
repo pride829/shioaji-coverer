@@ -327,7 +327,7 @@ count = 0
 
 
 # 在這裡下單
-def OnRealTimeQuote(price):
+def OnRealTimeQuote(symbol):
     
     
     global count
@@ -342,7 +342,7 @@ def OnRealTimeQuote(price):
     while len(price_history) > auto_order_consec_tick:
         del price_history[0]
     
-    TXF_price = price
+    TXF_price = float(symbol['TradingPrice'])
     if TXF_price == 0:
         return
     
@@ -357,17 +357,24 @@ def OnRealTimeQuote(price):
     if trade_lock: # trade_lock=True時仍然會記錄價格，但不會判斷是否要trade
         return
     
+    increasing = None
+    
     for i in range(len(price_history) - 1, 0, -1): # 從倒數第二個traverse到第一個
         
         price_diff = price_history[i][0] - price_history[i-1][0]
-        
+        #print(i, pre_price_diff, price_diff)
         
         #print(pre_price_diff, price_diff)
-        if pre_price_diff > 0 and pre_price_diff <= price_diff:
+        if increasing == 'increasing' and pre_price_diff <= price_diff:
             return
-        elif pre_price_diff < 0 and pre_price_diff >= price_diff:
+        elif increasing == 'decreasing' and pre_price_diff <= price_diff:
             return
         
+        if price_diff < 0:
+            increasing = 'decreasing'
+        elif price_diff > 0:
+            increasing = 'increasing'
+            
         pre_price_diff = price_diff
         
         tick_diff = price_history[-1][0] - price_history[i-1][0]
@@ -375,8 +382,6 @@ def OnRealTimeQuote(price):
         if (price_history[-1][1] - price_history[i-1][1]).total_seconds() > auto_order_time:
             # 超時
             break
-        
-
         
         if price_diff > 0 and         tick_diff > auto_buy_trigger:
             msg_log = "A huge increasing in price has been detected!\n"
@@ -590,14 +595,3 @@ print("Subscribing to " + get_future_code("TXF"))
 time.sleep(5)
 report_time_thread = threading.Thread(target = report_time)
 report_time_thread.start()
-
-
-
-"""
-台灣是UTC＋8
-那斯達克: 標準時間（EST）為UTC-5，夏令時間（EDT）為UTC-4。開盤時間：週一至週五上午9:30至下午4：00
-也就是說開盤時間為台灣時間周一22:30~週五17:00，平常為22:30~17:00
-
-
-"""
-
