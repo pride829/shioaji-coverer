@@ -111,6 +111,8 @@ def stop_price_updater():
     
     while(True):
         now = datetime.datetime.now().time()
+        # now is the computer time
+        
         
         if(now > intense_begin_time or now < intense_end_time):
             profit_stop = intense_profit_stop
@@ -197,7 +199,7 @@ def place_cover_order(quantity, action, original_price, market_price):
     trade = api.place_order(contract, fut_order)
     
     print('***')
-    log_msg = f'An cover order with action={action}, quantity={quantity} has been placed!'
+    log_msg = f'A FOK cover order with action={action}, quantity={quantity} has been placed!'
     print(log_msg)
     write_log(log_msg)
     print(f'Trade msg: {trade.status.msg}')
@@ -222,7 +224,7 @@ def auto_cover():
         
         now = datetime.datetime.now()
         
-        if(now.time().replace(microsecond=0) == auto_cover_time):
+        if(now.time().replace(microsecond=0) == auto_cover_time_day or now.time().replace(microsecond=0) == auto_cover_time_night):
             print('***It is now auto cover time. All tracking positions will be covered.***')
             list_positions()
             
@@ -439,19 +441,20 @@ def send_test_msg(
 def update_config():
     
     global intense_begin_time, intense_end_time, normal_profit_stop, normal_loss_stop, intense_profit_stop, intense_loss_stop
-    global auto_cover_time
+    global auto_cover_time_day, auto_cover_time_night
     global future_name, future_code
     
     pre_future_code = None
-    pre_auto_cover_time = None
+    pre_auto_cover_time_day = pre_auto_cover_time_night = None
     while(True):
         
-        with open('config.json') as f:
+        with open('coverer_config.json') as f:
             config_data = json.load(f)
 
             intense_begin_time = datetime.datetime.strptime(config_data['intense_begin'], '%H:%M').time()
             intense_end_time = datetime.datetime.strptime(config_data['intense_end'], '%H:%M').time()
-            auto_cover_time = datetime.datetime.strptime(config_data['auto_cover'], '%H:%M:%S').time()
+            auto_cover_time_day = datetime.datetime.strptime(config_data['auto_cover_day'], '%H:%M:%S').time()
+            auto_cover_time_night = datetime.datetime.strptime(config_data['auto_cover_night'], '%H:%M:%S').time()
             
             normal_profit_stop = int(config_data['normal_profit_stop'])
             normal_loss_stop = int(config_data['normal_loss_stop'])
@@ -469,10 +472,12 @@ def update_config():
             if(pre_future_code != future_code):
                 print(f'Future code has been set to {future_code}')
                 pre_future_code = future_code
-            if(auto_cover_time != pre_auto_cover_time):
-                print(f'Auto cover time has been set to {auto_cover_time}, Time is now {datetime.datetime.now().strftime("%H:%M:%S")}.')
-                pre_auto_cover_time = auto_cover_time
-            
+            if(auto_cover_time_day != pre_auto_cover_time_day):
+                print(f'Auto cover time day has been set to {auto_cover_time_day}, Time is now {datetime.datetime.now().strftime("%H:%M:%S")}.')
+                pre_auto_cover_time_day = auto_cover_time_day
+            if(auto_cover_time_night != pre_auto_cover_time_night):
+                print(f'Auto cover time has been set to {auto_cover_time_night}, Time is now {datetime.datetime.now().strftime("%H:%M:%S")}.')
+                pre_auto_cover_time_night = auto_cover_time_night
             time.sleep(1)
 
 
@@ -537,7 +542,7 @@ api.set_order_callback(place_cb)
 # Parsing config.json every second
 
 intense_begin_time = intense_end_time = normal_profit_stop = normal_loss_stop = intense_profit_stop = intense_loss_stop = None
-auto_cover_time = None
+auto_cover_time_day = auto_cover_time_night = None
 future_name = future_code = None
 
 # Start update config thread. All config variable will be updated every second.
@@ -599,5 +604,24 @@ api.quote.subscribe(
 )
 
 
+# In[16]:
+
+
+### Remember to start UI in the py file!!! ###
+
+# Start UI
+
+# Start UI with thread cause some EOF exceptions?
+#UI_thread = threading.Thread(target = UI)
+#UI_thread.start()
+
 # Simply run UI without threading.
 UI()
+
+# This does not work quite well with Anaconda prompt
+#sys.exit()
+
+
+
+
+

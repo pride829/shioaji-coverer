@@ -1,0 +1,9 @@
+{
+  "person_id": "N125685958",
+  "passwd": "ror830718104",
+  
+  "ca_path": "./sinopac/",
+  "ca_name": "Sinopac.pfx",
+  "ca_passwd": "N125685958"
+  
+}

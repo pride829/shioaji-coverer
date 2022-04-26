@@ -1,0 +1,17 @@
+{
+  "normal_profit_stop": "15",
+  "normal_loss_stop": "15",
+  "intense_profit_stop": "3",
+  "intense_loss_stop": "3",
+  
+  "intense_begin": "13:20",
+  "intense_end": "09:03",
+  
+  "auto_cover_day": "13:44:00",
+  "auto_cover_night": "04:59:00",
+  
+  "future_name": "MXF",
+  "auto_recent_future": "True",
+  "future_code": "MXFA2"
+  
+}

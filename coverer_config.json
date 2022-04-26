@@ -7,12 +7,14 @@
   "intense_begin": "13:20",
   "intense_end": "09:03",
   
-  "auto_cover": "13:44:00",
+  "auto_cover_day": "13:44:00",
+  "auto_cover_night": "04:59:00",
   
   "future_name": "MXF",
   "auto_recent_future": "True",
-  "future_code": "MXFA2",
+  "future_code": "MXFA2"
   
+<<<<<<< HEAD:config.json
   "auto_order_time": "3",
   "auto_order_consec_tick": "5",
   "auto_buy_trigger": "15",
@@ -20,4 +22,6 @@
   "auto_order_testing": "False",
   "auto_order_time_report": "60"
   
+=======
+>>>>>>> fdb8e4f689b8b1f3e42fda8d7dc01f835b966ed6:coverer_config.json
 }
