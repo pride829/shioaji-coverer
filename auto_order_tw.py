@@ -342,7 +342,7 @@ def OnRealTimeQuote(symbol):
     while len(price_history) > auto_order_consec_tick:
         del price_history[0]
     
-    TXF_price = float(symbol['TradingPrice'])
+    #TXF_price = float(symbol['TradingPrice'])
     if TXF_price == 0:
         return
     
